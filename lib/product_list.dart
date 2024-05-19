@@ -249,15 +249,8 @@ class _ProductDetailState extends State<ProductDetail> {
               children: <Widget>[
                 Image.network(widget.productCover),
                 ListTile(
-                  title: Text(widget.productName),
+                  title: Text('ผู้สร้าง ${widget.productPrice}'),
                   subtitle: Text(widget.productDescription),
-                ),
-                Text(
-                  'ผู้สร้าง ${widget.productPrice}',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ],
             ),
