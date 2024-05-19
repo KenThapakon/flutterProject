@@ -88,8 +88,8 @@ class _ProductUpdateState extends State<ProductUpdate> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-          title: const Text('แก้ไขชื่อภาพยนต์'),
+          backgroundColor: Color.fromARGB(255, 232, 170, 14),
+          title: const Text('แก้ไขรายละเอียดภาพยนต์'),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -129,11 +129,13 @@ class _ProductUpdateState extends State<ProductUpdate> {
                 ),
               ),
               TextButton(
-                  onPressed: productUpdate,
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text("บันทึกข้อมูล",
-                      style: TextStyle(color: Colors.blue))),
-            ],
+                onPressed: productUpdate,
+                style: TextButton.styleFrom(backgroundColor: Color.fromARGB(255, 255, 183, 0)),
+                child: Text("บันทึกข้อมูล", style: TextStyle(
+                  color: Color.fromARGB(255, 255, 255, 255), // สีส้มอ่อน
+                  fontSize: 20, // ขนาดตัวอักษร
+                  ),),),
+                ],
           ),
         ));
   }

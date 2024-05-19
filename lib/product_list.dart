@@ -1,13 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:movie/login.dart';
 import 'package:movie/product_form_create.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'product_update.dart';
+import 'package:movie/product_update.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+  const ProductList({Key? key}) : super(key: key);
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -26,22 +26,20 @@ class _ProductListState extends State<ProductList> {
 
   Future<void> getProduct() async {
     try {
-      await dio
-          .get(baseApi + "list/65130457?format=json",
-              options: Options(
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-              ))
-          .then((response) => {
-                if (response.statusCode == 200)
-                  {
-                    setState(() {
-                      productList = response.data!;
-                    })
-                  }
-              });
+      final response = await dio.get(
+        baseApi + "list/65130457?format=json",
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          productList = response.data!;
+        });
+      }
     } catch (e) {
       if (!context.mounted) return;
     }
@@ -50,191 +48,171 @@ class _ProductListState extends State<ProductList> {
   Future<void> logOut() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const Login()));
   }
 
   Future<void> productDelete(movieId) async {
     try {
-      await dio
-          .delete("${baseApi}update/$movieId",
-              options: Options(
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-              ))
-          .then((response) => {
-                {Navigator.pop(context, "Cancel"), getProduct()}
-              });
+      await dio.delete("${baseApi}update/$movieId",
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ));
+      getProduct();
     } catch (e) {
       if (!context.mounted) return;
     }
   }
 
+  @override
   Widget build(BuildContext context) {
-    print(productList);
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-          title: const Text('ภาพยนต์ของฉัน'),
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 232, 170, 14),
+        title: const Text(
+          'ภาพยนต์ของฉัน',
+          style: TextStyle(fontSize: 30),
         ),
-        body: Column(
-          children: <Widget>[
-            const ListTile(
-              leading: Icon(Icons.album),
-              title: Text("Enjoy watching !"),
-              subtitle: Text("Best Free Apps for Streaming Movies in 2024"),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                TextButton(
-                  child: const Icon(Icons.logout),
-                  onPressed: () => {
-                    logOut(),
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const Login()))
-                  },
-                )
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ProductFormCreate()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 9, 210, 19),
-                  ),
-                  child: const Text(
-                    'เพิ่มข้อมูล',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProductFormCreate()),
+              );
+            },
+            icon: Icon(Icons.add),
+          ),
+          IconButton(
+            onPressed: logOut,
+            icon: Icon(Icons.logout),
+          ),
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          const ListTile(
+            leading: Icon(Icons.album),
+            title: Text(
+              "Enjoy watching!",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
             ),
-            Expanded(
-                child: TextButton(
-              onPressed: () {},
-              child: ListView.builder(
-                  padding: const EdgeInsets.all(8.0),
-                  itemCount: productList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Card(
-                      clipBehavior: Clip.antiAlias,
-                      color: Colors.white,
-                      child: Column(
-                        children: [
-                          Image.network(productList[index]["movie_cover"]),
-                          ListTile(
-                            leading: const Icon(Icons.arrow_drop_down_circle),
-                            title: Text(productList[index]["movie_name"]),
-                            subtitle: Text(
-                                'Director ${productList[index]["movie_director"]}'),
+            subtitle: Text(
+              "Best Free Apps for Streaming Movies in 2024",
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: productList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: Image.network(
+                              productList[index]["movie_cover"],
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.height * 0.5,
+                            ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                                'วันที่ลงภาพยนต์ ${productList[index]["update_date"]}'),
-                          ),
-                          ButtonBar(
-                            alignment: MainAxisAlignment.end,
-                            children: [
-                              ElevatedButton(
-                                  onPressed: () => showDialog<String>(
-                                      context: context,
-                                      builder: (BuildContext context) =>
-                                          AlertDialog(
-                                              title: const Text("ลบข้อมูล"),
-                                              content: Text(
-                                                  "ลบข้อมูล ${productList[index]["movie_name"]}"),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          context, 'Cancel'),
-                                                  child: const Text("ปิด"),
-                                                ),
-                                                TextButton(
-                                                    onPressed: () => {
-                                                          productDelete(
-                                                              productList[index]
-                                                                  ["movie_id"])
-                                                        },
-                                                    child: const Text("ตกลง")),
-                                              ])),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        const Color.fromARGB(255, 255, 0, 0),
+                        ),
+                        ListTile(
+                          title: Text(productList[index]["movie_name"]),
+                          subtitle: Text('Director ${productList[index]["movie_director"]}'),
+                        ),
+                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('วันที่ ${productList[index]["update_date"].split("T")[0]}              '),
+                              ),
+                            IconButton(
+                              onPressed: () => showDialog<String>(
+                                context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  title: const Text("ลบข้อมูล"),
+                                  content: Text("ลบข้อมูล ${productList[index]["movie_name"]}"),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                                      child: const Text("ปิด"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => productDelete(productList[index]["movie_id"]),
+                                      child: const Text("ตกลง"),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              icon: Icon(Icons.delete),
+                              color: Colors.red,
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductUpdate(
+                                      movieId: productList[index]["movie_id"].toString(),
+                                    ),
                                   ),
-                                  child: const Text(
-                                    'ลบ',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => ProductUpdate(
-                                                movieId: productList[index]
-                                                        ["movie_id"]
-                                                    .toString())));
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color.fromRGBO(
-                                          24, 177, 252, 1)),
-                                  child: const Text(
-                                    'แก้ไข',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => ProductDetail(
-                                                  productName:
-                                                      productList[index]
-                                                              ["movie_name"] ??
-                                                          '',
-                                                  productCover:
-                                                      productList[index]
-                                                              ["movie_cover"] ??
-                                                          '',
-                                                  productDescription: productList[
-                                                              index][
-                                                          "movie_description"] ??
-                                                      '',
-                                                  productPrice: productList[
-                                                              index]
-                                                          ["movie_director"] ??
-                                                      '',
-                                                )));
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color.fromRGBO(
-                                          24, 177, 252, 1)),
-                                  child: const Text(
-                                    'รายละเอียด..',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                            ],
-                          )
-                        ],
-                      ),
-                    );
-                  }),
-            ))
-          ],
-        ));
+                                );
+                              },
+                              icon: Icon(Icons.edit),
+                              color: Color.fromARGB(255, 232, 170, 14),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetail(
+                                      productName: productList[index]["movie_name"] ?? '',
+                                      productCover: productList[index]["movie_cover"] ?? '',
+                                      productDescription: productList[index]["movie_description"] ?? '',
+                                      productPrice: productList[index]["movie_director"] ?? '',
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.arrow_drop_down_circle),
+                              color: Color.fromARGB(255, 232, 170, 14),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
+
+
+
+
 
 class ProductDetail extends StatefulWidget {
   const ProductDetail({
@@ -259,8 +237,8 @@ class _ProductDetailState extends State<ProductDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-        centerTitle: true,
+        backgroundColor: Color.fromARGB(255, 232, 170, 14),
+        title: Text(widget.productName),
       ),
       body: SingleChildScrollView(
         child: Padding(

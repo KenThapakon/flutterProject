@@ -12,7 +12,7 @@ class _ProductState extends State<Product> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.secondary,
+        backgroundColor: Color.fromARGB(255, 232, 170, 14),
         title: const Text('Product'),
         centerTitle: true,
       ),
