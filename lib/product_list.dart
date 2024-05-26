@@ -59,7 +59,10 @@ class _ProductListState extends State<ProductList> {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
-          ));
+          ))
+          .then((response) => {
+        Navigator.pop(context, 'cancel'), getProduct()
+        });
       getProduct();
     } catch (e) {
       if (!context.mounted) return;
